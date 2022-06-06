@@ -6,7 +6,7 @@ const router = express.Router();
 router.use(express.json({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 router.use(express.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 require('../db/conn');
-router.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.urlencoded({ extended: false }));
 const User = require('../models/userSchema');
 const Filedb = require('../models/fileSchema');
 const bcrypt = require('bcryptjs');
@@ -20,7 +20,8 @@ const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const methodOverride = require('method-override');
 
-
+// app.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json());
 const upload = require("../common");
 
 const Upload = require("../upload");
@@ -36,10 +37,11 @@ const { Navigate } = require('react-router-dom');
 // const unlinkFile = util.promisify(fs.unlink);
 
 // var AWS = require('aws-sdk');
-
-
+const cors = require("cors");
+router.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 router.use(cookieParser());
 router.use(express.static(__dirname + "public/"));
+router.use(express.json());
 
 const { google } = require("googleapis");
 const oauth2Client = new google.auth.OAuth2(
@@ -418,21 +420,22 @@ router.get("/myProjects", authenticate, async(req, res) => {
     }
 });
 
-router.get("/allProjects", authenticate, async(req, res) => {
+router.post("/allProjects", authenticate, async(req, res) => {
     const userID = req.userID;
     try {
         const data = await Filedb.find();
         console.log(data);
         if (data) {
             // res.status(201).json({message: "Success"});
-            res.send(data);
+            // res.send(data);
+            res.json(data);
         }
     } catch (err) {
         console.log(err);
     }
 });
 
-router.get("/sefrchBar", authenticate, async(req, res) => {
+router.post("/sefrchBar", authenticate, async(req, res) => {
 
     try {
         const data1 = await Filedb.find({
@@ -445,30 +448,36 @@ router.get("/sefrchBar", authenticate, async(req, res) => {
             lang: new RegExp(req.body.keyWord),
         });
 
-        const data4 = await Filedb.find({ academicYear: req.body.keyWord, });
+        // const data4 = await Filedb.find({ academicYear: req.body.keyWord, });
 
         let arr = [];
         arr.push(data1);
         arr.push(data2);
         arr.push(data3);
-        arr.push(data4);
+        // arr.push(data4);
 
         console.log(arr);
-        res.send(arr);
+        res.json(arr);
+        // res.send(arr);
     } catch (err) {
         console.log(err);
     }
 });
 
-router.get("/filter", authenticate, async(req, res) => {
+router.post("/filter", authenticate, async(req, res) => {
+    console.log("filter route");
     const dept = req.body.department;
     const domain = req.body.domain;
     const aYear = req.body.academicYear;
+    const language = req.body.Lang;
+    console.log("dept " + dept);
+    // console.log(domain);
     try {
         const data = await Filedb.find({
-            department: new RegExp(dept),
-            domain: new RegExp(domain),
-            academicYear: new RegExp(aYear),
+            department: dept,
+            domain: domain,
+            academicYear: aYear,
+            lang: language,
         });
 
         res.json(data);

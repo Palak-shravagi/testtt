@@ -45,22 +45,19 @@ function MyForm() {
     if (Dept === "None" || Domain === "None" || Language === "None") {
       window.alert("select dept and domain");
     } else {
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          department: Dept,
-          domain: Domain,
-          academicYear: Year,
-        })
-      };
-      const response = await fetch(
-        "http://localhost:5000/filter",
-        requestOptions
-      );
-      const data = await response.json();
-      console.log(data);
+      Axios.post("/filter", {
+        department: Dept,
+        domain: Domain,
+        academicYear: Year,
+      }).then((response) => {
+        const res = response.data;
+        console.log(res);
+      });
     }
+    // console.log("dept" + Dept);
+    // console.log("domain" + Domain);
+    // console.log("lang" + Language);
+    // console.log("year" + Year);
   }
 
   return (
@@ -100,29 +97,32 @@ function MyForm() {
           <Row style={{ marginRight: "15px" }}>
             <Form.Label>Department</Form.Label>
             <Form.Select
-              onChange={(e) => setDept(e.target.value)}
+              required
+              onChange={(e) => {
+                setDept(e.target.value);
+              }}
               as={Col}
               aria-label="Default select example"
               style={{ margin: "15px", color: "#000000" }}
-              required
+              custom
             >
               <option style={{ color: "#000000" }}>Select</option>
-              <option value="1" style={{ color: "#000000" }}>
+              <option value="CSE" style={{ color: "#000000" }}>
                 CSE
               </option>
-              <option value="2" style={{ color: "#000000" }}>
+              <option value="IT" style={{ color: "#000000" }}>
                 IT
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="Electronics" style={{ color: "#000000" }}>
                 Electronics
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="Electrical" style={{ color: "#000000" }}>
                 Electrical
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="Mechanical" style={{ color: "#000000" }}>
                 Mechanical
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="Civil" style={{ color: "#000000" }}>
                 Civil
               </option>
             </Form.Select>
@@ -136,13 +136,13 @@ function MyForm() {
               required
             >
               <option style={{ color: "#000000" }}>Select</option>
-              <option value="1" style={{ color: "#000000" }}>
+              <option value="Web" style={{ color: "#000000" }}>
                 Web
               </option>
-              <option value="2" style={{ color: "#000000" }}>
+              <option value="Android" style={{ color: "#000000" }}>
                 Android
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="Blockchain" style={{ color: "#000000" }}>
                 Blockchain
               </option>
             </Form.Select>
@@ -156,22 +156,22 @@ function MyForm() {
               required
             >
               <option style={{ color: "#000000" }}>Select</option>
-              <option value="1" style={{ color: "#000000" }}>
+              <option value="C" style={{ color: "#000000" }}>
                 C
               </option>
-              <option value="2" style={{ color: "#000000" }}>
+              <option value="CPP" style={{ color: "#000000" }}>
                 CPP
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="JAVA" style={{ color: "#000000" }}>
                 JAVA
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="PYTHON" style={{ color: "#000000" }}>
                 PYTHON
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="HTML,CSS" style={{ color: "#000000" }}>
                 HTML,CSS
               </option>
-              <option value="3" style={{ color: "#000000" }}>
+              <option value="REACT JS" style={{ color: "#000000" }}>
                 REACT JS
               </option>
             </Form.Select>

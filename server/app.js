@@ -10,8 +10,9 @@ const cors = require("cors");
 app.use(express.json());
 app.use(require('./router/auth'));
 const multer = require("multer");
+const Axios = require("axios");
 const upload = multer({
-  dest: "./uploads/",
+    dest: "./uploads/",
 });
 
 //middleware

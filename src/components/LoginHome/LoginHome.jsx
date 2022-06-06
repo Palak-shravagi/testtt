@@ -12,6 +12,9 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import { useNavigate } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
+// import { Row, Col } from "react-bootstrap";
+import Form from "react-bootstrap/Form";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { useState } from "react";
 // import Rightsection from "../rightsection/Rightsection";
 import TextField from "@mui/material/TextField";
@@ -21,9 +24,11 @@ import Fab from "@mui/material/Fab";
 import logo from "../../final-logo-01.jpg";
 import { Row, Col } from "react-bootstrap";
 import "./loginhome.css";
-import Filter from "../filters/filter";
+// import Filter from "../filters/filter";
 import { useEffect } from "react";
 import "../Profile/profile";
+import Axios from "axios";
+import Myprojects from "../MyProjects/myprojects";
 import { ConstructionOutlined } from "@mui/icons-material";
 // const router = express.Router();
 // const express = require("express");
@@ -31,6 +36,72 @@ const pages = ["Home", "About us", "Contact"];
 const settings = ["Profile", "My Projects", "Logout"];
 
 function LoginHome() {
+  const [Dept, setDept] = React.useState("None");
+  const [Domain, setDomain] = React.useState("None");
+  const [Language, setLanguage] = React.useState("None");
+  const [Year, setYear] = React.useState(new Date().getFullYear());
+  const [filterdata, setfilterdata] = React.useState([]);
+  const [allproject, setallproject] = useState([]);
+  const [userd, setUserData] = useState();
+  const [search, setsearch] = useState("");
+  const [searcharr, setsearcharr] = useState([]);
+
+  useEffect(() => {
+    callhomelogin();
+
+    Axios.post("/allProjects", {}).then((response) => {
+      const res = response.data;
+      setallproject(res);
+      // console.log(res);
+    });
+  }, []);
+  let minOffset = 0,
+    maxOffset = 75;
+  let thisYear = new Date().getFullYear();
+  let allYears = [];
+  for (let x = 0; x <= maxOffset; x++) {
+    allYears.push(thisYear - x);
+  }
+
+  function onclicksearch() {
+    console.log("search icon clicked");
+    Axios.post("/sefrchBar", {
+      keyword: search,
+    }).then((response) => {
+      const res = response.data;
+      console.log("------------");
+      console.log(res);
+      
+    });
+  }
+
+  async function applyonclick() {
+    if (Dept === "None" || Domain === "None" || Language === "None") {
+      window.alert("select dept and domain");
+    } else {
+      // console.log("langaugae" + Language);
+      Axios.post("/filter", {
+        department: Dept,
+        domain: Domain,
+        academicYear: Year,
+        Lang: Language,
+      }).then((response) => {
+        const res = response.data;
+        console.log(res);
+        // setfilterdata(res);
+        // renderprojects(filterdata);
+        setallproject(res);
+      });
+    }
+  }
+  const yearList = allYears.map((x) => {
+    return (
+      <option style={{ color: "#000000" }} key={x}>
+        {x}
+      </option>
+    );
+  });
+
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -58,15 +129,6 @@ function LoginHome() {
     setAnchorElUser(null);
   };
 
-  // const handlelogout = () => {
-  //   router.get("./logout", (req, res) => {
-  //     res.clearCookie("jwtoken", { path: "/" });
-  //     res.status(200).send("user logout");
-  //     window.alert("user log out successfully");
-  //   });
-  // };
-  const [userd, setUserData] = useState();
-
   const callhomelogin = async () => {
     try {
       const res = await fetch("/LoginHome", {
@@ -81,16 +143,6 @@ function LoginHome() {
       const data = await res.json();
       console.log("data from db" + data);
       setUserData(data);
-
-      console.log(data);
-      console.log("_________________");
-      console.log(userd);
-      console.log(JSON.stringify(data.username));
-
-      // console.log("so this is data " + userd.name);
-      console.log("inside the console of loginhome");
-      // console.log("data is printed...." + data);
-
       if (!res.status === 200) {
         const error = new Error(res.error);
         //  console.log(error);
@@ -103,10 +155,19 @@ function LoginHome() {
     // navigate("/LoginHome");
   };
 
-  useEffect(() => {
-    callhomelogin();
-  }, []);
-  if (userd) {
+  function renderprojects(data) {
+    // console.log("renderfunction" + JSON.stringify(data[0]));
+    let data1 = JSON.stringify(data);
+    // console.log("data111111" + data1);
+    let items = [];
+    data.map((item, index) => {
+      items.push(<Myprojects item={item} />);
+    });
+    return items;
+    // return <Myprojects props={data} />;
+  }
+
+  if (userd && allproject) {
     return (
       <>
         <div style={{ backgroundColor: "rgb(13,17,23)" }}>
@@ -332,16 +393,154 @@ function LoginHome() {
                   placeholder="Type here to search"
                   aria-label="Recipient's username"
                   aria-describedby="basic-addon2"
+                  onChange={(e) => {
+                    setsearch(e.target.value);
+                  }}
                 />
                 <div class="input-group-append">
-                  <button class="btn btn-lg" type="button">
+                  <button
+                    class="btn btn-lg"
+                    type="submit"
+                    onClick={onclicksearch}
+                  >
                     <i class="fa fa-search"></i>
                   </button>{" "}
                 </div>
               </div>
+
+              {renderprojects(allproject)}
             </Col>
             <Col md={3} style={{ paddingRight: "0px" }}>
-              <Filter />
+              {/* <Filter /> */}
+              <div
+                style={{
+                  color: "#ffffff",
+                  border: "1px solid rgb(138,149,158)",
+                  borderRadius: "5px",
+                  paddingLeft: "0px",
+                  paddingRight: "0px",
+                }}
+              >
+                <form
+                  style={{
+                    padding: "40px",
+                    backgroundColor: "rgb(23,26,34)",
+                  }}
+                  method="POST"
+                >
+                  <h4>Filters</h4>
+                  <Row style={{ marginRight: "15px" }}>
+                    <Form.Label>Department</Form.Label>
+                    <Form.Select
+                      required
+                      onChange={(e) => {
+                        setDept(e.target.value);
+                      }}
+                      as={Col}
+                      aria-label="Default select example"
+                      style={{ margin: "15px", color: "#000000" }}
+                      custom
+                    >
+                      <option style={{ color: "#000000" }}>Select</option>
+                      <option value="CSE" style={{ color: "#000000" }}>
+                        CSE
+                      </option>
+                      <option value="IT" style={{ color: "#000000" }}>
+                        IT
+                      </option>
+                      <option value="Electronics" style={{ color: "#000000" }}>
+                        Electronics
+                      </option>
+                      <option value="Electrical" style={{ color: "#000000" }}>
+                        Electrical
+                      </option>
+                      <option value="Mechanical" style={{ color: "#000000" }}>
+                        Mechanical
+                      </option>
+                      <option value="Civil" style={{ color: "#000000" }}>
+                        Civil
+                      </option>
+                    </Form.Select>
+
+                    <Form.Label>Domain</Form.Label>
+                    <Form.Select
+                      onChange={(e) => setDomain(e.target.value)}
+                      as={Col}
+                      aria-label="Default select example"
+                      style={{ margin: "15px", color: "#000000" }}
+                      required
+                    >
+                      <option style={{ color: "#000000" }}>Select</option>
+                      <option value="Web" style={{ color: "#000000" }}>
+                        Web
+                      </option>
+                      <option value="Android" style={{ color: "#000000" }}>
+                        Android
+                      </option>
+                      <option value="Blockchain" style={{ color: "#000000" }}>
+                        Blockchain
+                      </option>
+                    </Form.Select>
+
+                    <Form.Label color="#fff">Languages Used</Form.Label>
+                    <Form.Select
+                      onChange={(e) => setLanguage(e.target.value)}
+                      as={Col}
+                      aria-label="Default select example"
+                      style={{ margin: "15px" }}
+                      required
+                    >
+                      <option style={{ color: "#000000" }}>Select</option>
+                      <option value="C" style={{ color: "#000000" }}>
+                        C
+                      </option>
+                      <option value="CPP" style={{ color: "#000000" }}>
+                        CPP
+                      </option>
+                      <option value="JAVA" style={{ color: "#000000" }}>
+                        JAVA
+                      </option>
+                      <option value="PYTHON" style={{ color: "#000000" }}>
+                        PYTHON
+                      </option>
+                      <option value="HTML,CSS" style={{ color: "#000000" }}>
+                        HTML,CSS
+                      </option>
+                      <option value="REACT JS" style={{ color: "#000000" }}>
+                        REACT JS
+                      </option>
+                    </Form.Select>
+
+                    <Form.Label style={{ color: "#ffffff" }}>
+                      Academic-year
+                    </Form.Label>
+                    <Form.Select
+                      onChange={(e) => setYear(e.target.value)}
+                      aria-label="Default select example"
+                      style={{ margin: "15px", color: "#000000" }}
+                      required
+                    >
+                      {yearList}
+                      {}
+                    </Form.Select>
+                    {}
+                    <button
+                      class="btn btn-light"
+                      type="button"
+                      style={{
+                        marginLeft: "15px",
+                        marginRight: "10px",
+                        marginTop: "10px",
+                      }}
+                      onClick={applyonclick}
+                    >
+                      Apply
+                    </button>
+                  </Row>
+
+                  {}
+                </form>
+              </div>
             </Col>
           </Row>
           {/* <Box width={20} component="span" m={1} >
